@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
@@ -23,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +32,7 @@ import androidx.navigation.NavController
 @Composable
 fun PantallaLista(
     navController: NavController,
-    items: List<String> // Recibe la lista de items
+    items: SnapshotStateList<String> // Recibe la lista de items
 ) {
     Column(
         modifier = Modifier
@@ -76,7 +76,7 @@ fun PantallaLista(
                         ) {
                             Text(text = item)
                             IconButton(
-                                onClick = { /* Opcional: agregar funcionalidad de eliminar aquí */ }
+                                onClick = { listaItemsGlobal.remove(item) }
                             ) {
                                 Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                             }
@@ -88,7 +88,7 @@ fun PantallaLista(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(onClick = { navController.navigate("home") }) {
@@ -99,7 +99,7 @@ fun PantallaLista(
                 }
             }
 
-            Button(onClick = { /* Ya estás en lista */ }) {
+            Button(onClick = { /* Ya estamos en lista */ }) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.List, contentDescription = "Lista")
                     Spacer(modifier = Modifier.size(8.dp))

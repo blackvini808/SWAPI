@@ -9,6 +9,9 @@ lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
 
+#Versiones de  nuestras lirberias para Navigation Compose
+versionNavigationCompose = "2.8.2"
+versionKotlinxSerialization = "1.6.3"
 coil = "2.4.0"  # Versión actualizada (puedes usar la más reciente)
 navigation = "2.7.5"  # Versión actualizada al momento de escribir
 
@@ -29,9 +32,14 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+# Aqui importamos las librerias de configruacion para utilizar Navigation Compose
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "versionKotlinxSerialization" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
+#Para cargar todos los elementos del navigation compose
+jetbrainsKotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref="kotlin" }

@@ -40,6 +40,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.example.clon_fulanito.API.SWAPI.RepositorioSWAPI
+import com.example.clon_fulanito.NaveResumen
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
+
 @Composable
 fun PantallaHome(
     navController: NavController,
@@ -47,19 +57,39 @@ fun PantallaHome(
     ) {
 
     // Datos de ejemplo para el slider
-    val imagenCarrusel = listOf(
-        "https://via.placeholder.com/600x400?text=Imagen+1",
-        "https://via.placeholder.com/600x400?text=Imagen+2",
-        "https://via.placeholder.com/600x400?text=Imagen+3"
-    )
+    val scope = rememberCoroutineScope()
+    var naves by remember { mutableStateOf<List<NaveResumen>>(emptyList()) }
 
     var imagenActual by remember { mutableStateOf(0) }
     var mostrarInfoImagen by remember { mutableStateOf(false) }
 
-    val imagenPresente = imagenCarrusel[imagenActual]
-    val estaEnLista = remember(imagenActual, listaItems) {
-        imagenPresente in listaItems
+    // Lista fija de URLs de imágenes para el carrusel
+    val imagenesCarrusel = listOf(
+        R.drawable.corvette,
+        R.drawable.stardestroyer,
+        R.drawable.sentinel,
+        R.drawable.deathstar,
+        R.drawable.ywing,
+        R.drawable.millenium,
+        R.drawable.tie,
+        R.drawable.executor,
+        R.drawable.xwing,
+        R.drawable.rebel
+    )
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            val repo = RepositorioSWAPI()
+            val respuesta: PaginaContenedora = withContext(Dispatchers.IO) {
+                repo.obtener_naves_espaciales(1)
+            }
+            naves = respuesta.results
+        }
     }
+
+    val imagenPresente = naves.getOrNull(imagenActual)?.name ?: ""
+
+    val estaEnLista = imagenPresente.isNotEmpty() && imagenPresente in listaItems
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -77,7 +107,7 @@ fun PantallaHome(
         ) {
             // Imagen del slider
             AsyncImage(
-                model = imagenCarrusel[imagenActual],
+                model = imagenesCarrusel.getOrNull(imagenActual),
                 contentDescription = "Slider Image",
                 modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.Crop
@@ -92,7 +122,7 @@ fun PantallaHome(
             ) {
                 IconButton(
                     onClick = {
-                        imagenActual = if (imagenActual == 0) imagenCarrusel.size - 1 else imagenActual - 1
+                        imagenActual = if (imagenActual == 0) naves.size - 1 else imagenActual - 1
                     },
                     modifier = Modifier.size(48.dp)
                 ) {
@@ -101,7 +131,7 @@ fun PantallaHome(
 
                 IconButton(
                     onClick = {
-                        imagenActual = if (imagenActual == imagenCarrusel.size - 1) 0 else imagenActual + 1
+                        imagenActual = if (imagenActual == naves.size - 1) 0 else imagenActual + 1
                     },
                     modifier = Modifier.size(48.dp)
                 ) {
@@ -111,19 +141,35 @@ fun PantallaHome(
         }
 
         // Información de la imagen (aparece al hacer clic)
-        if (mostrarInfoImagen) {
+        if (mostrarInfoImagen && naves.isNotEmpty()) {
+            val naveActual = naves[imagenActual]
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Información de la imagen ${imagenActual + 1}",
+                    text = naveActual.name,
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Esta es información detallada sobre la imagen mostrada en la API.",
+                    text = "UID: ${naveActual.uid}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Modelo: ${naveActual.model}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Fabricante: ${naveActual.manufacturer}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Costo en créditos: ${naveActual.cost_in_credits}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -131,22 +177,22 @@ fun PantallaHome(
                     onClick = {
                         if (estaEnLista) {
                             listaItems.remove(imagenPresente)
-                        } else {
+                        } else if (imagenPresente.isNotEmpty()) {
                             listaItems.add(imagenPresente)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (imagenPresente in listaItems) Color.Red else Color.Green
+                        containerColor = if (estaEnLista) Color.Red else Color.Green
                     )
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            if (imagenPresente in listaItems) Icons.Default.Delete else Icons.Default.Add,
+                            if (estaEnLista) Icons.Default.Delete else Icons.Default.Add,
                             contentDescription = "Lista"
                         )
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text(if (imagenPresente in listaItems) "Quitar de lista" else "Agregar a lista")
+                        Text(if (estaEnLista) "Quitar de lista" else "Agregar a lista")
                     }
                 }
             }
@@ -191,3 +237,4 @@ fun PantallaHome(
         }
     }
 }
+
